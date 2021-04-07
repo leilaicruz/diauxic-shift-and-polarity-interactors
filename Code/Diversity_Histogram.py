@@ -9,21 +9,26 @@ This calculation requires the following data files:
 
 
 import pandas as pd
+import numpy as np
 import seaborn as sns
 import scipy
 from scipy.stats import norm
+#%% Import interaction matrix (in which each interactor occurs only once)
+Interaction_Matrix = pd.read_excel (r'Data_Files/Overlap_First_Interactors_NoDuplicates.xlsx')
 
-# Import interaction matrix (in which each interactor occurs only once)
-Interaction_Matrix = pd.read_excel (r'Data_Files\Overlap_First_Interactors_NoDuplicates.xlsx')
-
-# Loop over each gene to get the number of interactions it has with genes in 
-# the polarity and genes in the diauxic shift modules
+#%% Preparing datasets
 
 Genes = pd.unique(Interaction_Matrix['Gene'])
 Col_Vars = ['Gene','Number_of_Positive_Interactions_DiauxicShift','Number_of_Negative_Interactions_DiauxicShift'\
             ,'Number_of_Positive_Interactions_Polarity','Number_of_Negative_Interactions_Polarity']
 Gene_Positive_Negative_Number = pd.DataFrame(data=None, columns=Col_Vars)
 
+Interaction_Matrix.index=Interaction_Matrix['Gene']
+Interaction_Matrix.drop(columns='Gene',inplace=True)
+
+
+#%% # Loop over each gene to get the number of interactions it has with genes in 
+# the polarity and genes in the diauxic shift modules
 for i in Genes: 
     
     Numb_Pos_Int_DS = len(Interaction_Matrix[(Interaction_Matrix['Gene'] == i) & \
@@ -51,8 +56,8 @@ for i in Genes:
             
 
 
-# Determine the distribution of the polarity/diauxic shift interactions for 
-# the gene collection
+#%% Determine the distribution of the polarity/diauxic shift interactions for the gene collection
+
 Gene_Positive_Negative_Number['Total_Diauxic'] = \
                                 Gene_Positive_Negative_Number['Number_of_Negative_Interactions_DiauxicShift']+\
                                 Gene_Positive_Negative_Number['Number_of_Positive_Interactions_DiauxicShift']
@@ -65,15 +70,19 @@ Gene_Positive_Negative_Number['Polarity_over_Diauxic'] = (Gene_Positive_Negative
                                                         Gene_Positive_Negative_Number['Total_Diauxic']/38)\
                                                         /(Gene_Positive_Negative_Number['Total_Diauxic']/38+\
                                                          Gene_Positive_Negative_Number['Total_Polarity']/123)
-
+# questions: 
+    # - where do 123 and 38 come from? 
+    # - can you explain this expresion you used to compute the ['polarity_over_diauxic']? 
+#%% 
+# can you explain the rationale behind these magnitudes? 
 
 Dist_Overlap_Inter = Gene_Positive_Negative_Number[(Gene_Positive_Negative_Number['Total_Polarity']!=0) \
-                                                  & (Gene_Positive_Negative_Number['Total_Diauxic']!=0)]
-
+                                                  & (Gene_Positive_Negative_Number['Total_Diauxic']!=0)] 
 Dist_Non_Overlap_Inter = Gene_Positive_Negative_Number[(Gene_Positive_Negative_Number['Total_Polarity']==0) \
                                                   | (Gene_Positive_Negative_Number['Total_Diauxic']==0)]
-
+#%%
 # Create a histogram of the 'Diversity'
+
 sns.set(rc={'figure.figsize':(2.4,3)})
 sns.set_style('whitegrid')
 spacing = 0.05
