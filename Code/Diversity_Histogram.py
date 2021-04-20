@@ -5,6 +5,7 @@ This code determines the diversity of each interactor
 This calculation requires the following data files: 
     Overlap_First_Interactors_NoDuplicates.xlsx
 
+
 """
 
 
@@ -14,7 +15,7 @@ import seaborn as sns
 import scipy
 from scipy.stats import norm
 #%% Import interaction matrix (in which each interactor occurs only once)
-Interaction_Matrix = pd.read_excel (r'Data_Files/Overlap_First_Interactors_NoDuplicates.xlsx')
+Interaction_Matrix = pd.read_excel (r'Code/Data_Files/Overlap_First_Interactors_NoDuplicates.xlsx')
 
 #%% Preparing datasets
 
@@ -23,8 +24,7 @@ Col_Vars = ['Gene','Number_of_Positive_Interactions_DiauxicShift','Number_of_Neg
             ,'Number_of_Positive_Interactions_Polarity','Number_of_Negative_Interactions_Polarity']
 Gene_Positive_Negative_Number = pd.DataFrame(data=None, columns=Col_Vars)
 
-Interaction_Matrix.index=Interaction_Matrix['Gene']
-Interaction_Matrix.drop(columns='Gene',inplace=True)
+
 
 
 #%% # Loop over each gene to get the number of interactions it has with genes in 
@@ -54,7 +54,12 @@ for i in Genes:
                                                                           'Number_of_Negative_Interactions_Polarity':Numb_Neg_Int_Pol},\
                                                                            ignore_index=True)
             
+#%%  number of unique genes in the two modules. 
+Polarity_Genes = pd.read_excel (r'Code/Data_Files/Polarity_Related_Genes_Description.xlsx')
+Total_number_polarity_genes = len(np.unique(Polarity_Genes['Gene > Systematic Name']))
 
+Diauxic_Shift_Genes = pd.read_excel (r'Code/Data_Files/Genes_Diauxic_Shift_Description.xlsx')
+Total_number_diauxic_shift_genes = len(np.unique(Diauxic_Shift_Genes ['Gene > Systematic Name']))
 
 #%% Determine the distribution of the polarity/diauxic shift interactions for the gene collection
 
@@ -66,13 +71,12 @@ Gene_Positive_Negative_Number['Total_Polarity'] = \
                                 Gene_Positive_Negative_Number['Number_of_Negative_Interactions_Polarity']+\
                                 Gene_Positive_Negative_Number['Number_of_Positive_Interactions_Polarity']
 
-Gene_Positive_Negative_Number['Polarity_over_Diauxic'] = (Gene_Positive_Negative_Number['Total_Polarity']/123-\
-                                                        Gene_Positive_Negative_Number['Total_Diauxic']/38)\
-                                                        /(Gene_Positive_Negative_Number['Total_Diauxic']/38+\
-                                                         Gene_Positive_Negative_Number['Total_Polarity']/123)
-# questions: 
-    # - where do 123 and 38 come from? 
-    # - can you explain this expresion you used to compute the ['polarity_over_diauxic']? 
+Gene_Positive_Negative_Number['Polarity_over_Diauxic'] = (Gene_Positive_Negative_Number['Total_Polarity']/Total_number_polarity_genes-\
+                                                        Gene_Positive_Negative_Number['Total_Diauxic']/Total_number_diauxic_shift_genes)\
+                                                        /(Gene_Positive_Negative_Number['Total_Diauxic']/Total_number_polarity_genes+\
+                                                         Gene_Positive_Negative_Number['Total_Polarity']/Total_number_diauxic_shift_genes)
+
+
 #%% 
 # can you explain the rationale behind these magnitudes? 
 
